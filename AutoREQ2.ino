@@ -200,7 +200,7 @@ void loop() {
     {
     
       Serial.println("Connected!");
-
+      char c; //char variable for buffer value
       //converts decimals in buffer to chars and sends across to server
       for (byte i=0; i < bufferSize; i++)
       {
