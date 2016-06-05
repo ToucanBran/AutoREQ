@@ -5,7 +5,6 @@
 //contains server address as well as SSID
 //credentials
 #include "Credentials.h" 
-
 /*
  * Pin layout used:
  * -----------------------------------------------------------------------------------------
