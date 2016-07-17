@@ -35,13 +35,14 @@
 #define SS_PIN          7          // Configurable, see typical pin layout above
 #define MIN_BUFFER_SIZE 18         // Minimum buffer size for read function
 #define DEST_PORT 5000              //Arbtrary port number, can change
+#define MMIS_NUMBER_SIZE 6          //number of characters your MMIS number
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 MFRC522::MIFARE_Key key;
 
 void setup() {
-  
+   
    Serial.begin(9600);
- 
+
   //start up wifly
   WiFly.begin();
 
@@ -81,10 +82,11 @@ void loop() {
     // Check for compatibility
     if (    piccType != MFRC522::PICC_TYPE_MIFARE_MINI
         &&  piccType != MFRC522::PICC_TYPE_MIFARE_1K
-        &&  piccType != MFRC522::PICC_TYPE_MIFARE_4K) {
-        Serial.println(F("This sample only works with MIFARE Classic cards."));
-        return;
-    }
+        &&  piccType != MFRC522::PICC_TYPE_MIFARE_4K) 
+        {
+          Serial.println(F("This sample only works with MIFARE Classic cards."));
+          return;
+        }
 
     // In this sample we use the second sector,
     // that is: sector #1, covering block #4 up to and including block #7
@@ -93,7 +95,7 @@ void loop() {
     
     //will need to get rid of this. This is the
     //actual value in the block of data I'm reading
-    byte dataBlock[] = "DYND12345";
+   // byte dataBlock[] = "DYND12345";
     byte trailerBlock   = 7;
     byte status;
     byte buffer[MIN_BUFFER_SIZE];
@@ -123,7 +125,7 @@ void loop() {
 
     //If read status is ok, call sendMessage function
     if (status == MFRC522::STATUS_OK) {
-        sendMessage(buffer,sizeof(dataBlock));
+        sendMessage(buffer,MMIS_NUMBER_SIZE);
     }
     else{
         Serial.print(F("MIFARE_Read() failed: "));
@@ -164,10 +166,10 @@ void loop() {
       for (int i=0; i < dataSize; i++)
       {
          client.print(c = buffer[i]);
+         
       }
      
       //disconnects from socket
-      client.println();
       client.stop();
     }
     else
