@@ -35,7 +35,9 @@
 #define SS_PIN          7          // Configurable, see typical pin layout above
 #define MIN_BUFFER_SIZE 18         // Minimum buffer size for read function
 #define DEST_PORT 5000              //Arbtrary port number, can change
+#define MACHINE_LOCATION "emrg"     //Dept code. This will change 
 #define MMIS_NUMBER_SIZE 6          //number of characters your MMIS number
+
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 MFRC522::MIFARE_Key key;
 
@@ -161,6 +163,12 @@ void loop() {
     
       Serial.println("Connected!");
       char c; //char variable for buffer value
+
+      //sending current location
+      client.print(MACHINE_LOCATION);
+
+      //used to separate location and number
+      client.print("-");
       
       //converts decimals in buffer to chars and sends across to server
       for (int i=0; i < dataSize; i++)
