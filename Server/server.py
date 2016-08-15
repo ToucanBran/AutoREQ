@@ -1,8 +1,10 @@
 #! python3
 # simple server to listen for data from arduino
 import socket,logging,sys, re
-from database import Database
 logging.basicConfig(stream=sys.stderr, level=logging.INFO)
+
+from database import Database
+
 
 def add_order(location, item_num):
     logging.info("adding order...")
@@ -41,7 +43,7 @@ def get_pars(location, item_num):
     logging.info(len(item_num))
     logging.info("Getting pars...")
 
-    # sql statement. I have to use direct substituion for the table name 
+    # sql statement. I have to use direct substitution for the table name 
     # because MySQLdb doesn't support table name substitutions. This is
     # ok because the table name doesn't come from user input, it's hardcoded
     # in the AutoREQ sourcecode. The item_num is properly escaped though.
@@ -75,6 +77,7 @@ s.bind((host, port))
 s.listen()
 
 while True:
+  
     #creating database object, opening the locations db.
     db = Database("locations")
 

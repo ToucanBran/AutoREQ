@@ -29,8 +29,6 @@
  *
  */
  
- 
-
 #define RST_PIN         9           // Configurable, see typical pin layout above
 #define SS_PIN          7          // Configurable, see typical pin layout above
 #define MIN_BUFFER_SIZE 18         // Minimum buffer size for read function
@@ -40,6 +38,8 @@
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 MFRC522::MIFARE_Key key;
+
+void sendMessage(byte *buffer,int dataSize);
 
 void setup() {
    
@@ -94,10 +94,6 @@ void loop() {
     // that is: sector #1, covering block #4 up to and including block #7
     byte sector         = 1;
     byte blockAddr      = 4;
-    
-    //will need to get rid of this. This is the
-    //actual value in the block of data I'm reading
-   // byte dataBlock[] = "DYND12345";
     byte trailerBlock   = 7;
     byte status;
     byte buffer[MIN_BUFFER_SIZE];

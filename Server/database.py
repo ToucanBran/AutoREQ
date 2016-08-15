@@ -23,7 +23,7 @@ class Database:
 
 			#returns the first row of values
 			values = cursor.fetchone()
-		except MySQLdb.Error, e:
+		except MySQLdb.Error as e:
 			logging.error("{}".format(e))
 			values = -1
 
@@ -38,7 +38,7 @@ class Database:
 		cursor = self.db.cursor()
 		try: 
 			cursor.execute(sql_statement, values)	
-		except MySQLdb.Error, e:
+		except MySQLdb.Error as e:
 			logging.error("{}".format(e))
 
 		self.db.commit()
@@ -47,3 +47,4 @@ class Database:
 	# closes connection to db when called 
 	def close(self):
 		self.db.close()
+

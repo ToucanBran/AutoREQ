@@ -31,5 +31,5 @@ This is still a work in progress but at the moment I'm using the following:
     <li>Arduino WiFly</li>
     <li>RFID reader for Arduino</li>
     <li>Python</li>
-    <li>MySql</li>
+    <li>MySQL</li>
   </ul>
