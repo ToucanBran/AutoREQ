@@ -5,7 +5,7 @@
 //contains server address as well as SSID
 //credentials
 #include "Credentials.h" 
-/*
+/* REQMACHINE
  * Pin layout used:
  * -----------------------------------------------------------------------------------------
  *             MFRC522      Arduino       
@@ -29,17 +29,21 @@
  *
  */
  
-#define RST_PIN         9           // Configurable, see typical pin layout above
-#define SS_PIN          7          // Configurable, see typical pin layout above
-#define MIN_BUFFER_SIZE 18         // Minimum buffer size for read function
-#define DEST_PORT 5000              //Arbtrary port number, can change
-#define MACHINE_LOCATION "emrg"     //Dept code. This will change 
-#define MMIS_NUMBER_SIZE 6          //number of characters your MMIS number
+#define RST_PIN           9           // Configurable, see typical pin layout above
+#define SS_PIN            7           // Configurable, see typical pin layout above
+#define MIN_BUFFER_SIZE   18          // Minimum buffer size for read function
+#define DEST_PORT         5000        //Arbtrary port number, can change
+#define MACHINE_LOCATION  "emrg"     //Dept code. This will change 
+#define MMIS_NUMBER_SIZE  6          //number of characters in your MMIS number
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 MFRC522::MIFARE_Key key;
 
-void sendMessage(byte *buffer,int dataSize);
+//Area of card to read data from
+byte sector         = 1;
+byte blockAddr      = 4;
+byte trailerBlock   = 7;
+
 
 void setup() {
    
@@ -72,6 +76,9 @@ void setup() {
 
 void loop() {
 
+    byte buffer[MIN_BUFFER_SIZE];
+    byte size = sizeof(buffer);
+    
     // Look for new cards
     if ( ! mfrc522.PICC_IsNewCardPresent())
         return;
@@ -80,49 +87,15 @@ void loop() {
     if ( ! mfrc522.PICC_ReadCardSerial())
         return;
 
-    byte piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
-    // Check for compatibility
-    if (    piccType != MFRC522::PICC_TYPE_MIFARE_MINI
-        &&  piccType != MFRC522::PICC_TYPE_MIFARE_1K
-        &&  piccType != MFRC522::PICC_TYPE_MIFARE_4K) 
-        {
-          Serial.println(F("This sample only works with MIFARE Classic cards."));
-          return;
-        }
-
-    // In this sample we use the second sector,
-    // that is: sector #1, covering block #4 up to and including block #7
-    byte sector         = 1;
-    byte blockAddr      = 4;
-    byte trailerBlock   = 7;
-    byte status;
-    byte buffer[MIN_BUFFER_SIZE];
-    byte size = sizeof(buffer);
-
-    // In order to read or write data to a PICC, the card must first be
-    //authenticated using a key. Below, the PICC is being authenticated using 
-    //key A so we can read data from card
-    Serial.println(F("Authenticating using key A..."));
-    status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &key, &(mfrc522.uid));
-
-    //check if authenticated
-    if (status != MFRC522::STATUS_OK) {
-        Serial.print(F("PCD_Authenticate() failed: "));
-        Serial.println(mfrc522.GetStatusCodeName(status));
-        return;
-    }
-
-    // Read data from the block
-    Serial.print(F("Reading data from block ")); 
-    Serial.print(blockAddr);
-    Serial.println(F(" ..."));
-
-    //reads data from the specified block address and puts
-    //it into the buffer
-    status = mfrc522.MIFARE_Read(blockAddr, buffer, &size);
-
-    //If read status is ok, call sendMessage function
-    if (status == MFRC522::STATUS_OK) {
+    if(!card_compatible())
+       Serial.println(F("This sample only works with MIFARE Classic cards."));
+  
+    //authenticates cards for reading purposes
+    authenticate();
+    
+    //Call read to fill up the buffer with the item number
+    //to refill. If status is ok, send the order to the server
+    if (read(buffer,&size) == MFRC522::STATUS_OK) {
         sendMessage(buffer,MMIS_NUMBER_SIZE);
     }
     else{
@@ -130,14 +103,82 @@ void loop() {
         Serial.println(mfrc522.GetStatusCodeName(status));
     }
     
-    
-
     // Halt PICC
     mfrc522.PICC_HaltA();
     // Stop encryption on PCD
     mfrc522.PCD_StopCrypto1();
   
 }
+
+/* *************************************************************************
+ * *************************************************************************
+ * **************************** FUNCTIONS **********************************
+ * *************************************************************************
+ * ************************************************************************/
+
+ 
+/* Function: card_compatible
+ * Description: Checks rfid card for compatibility
+ * Inputs: None
+ * Outputs: boolean, true if card compatible, false if not
+ */
+ boolean card_compatible()
+ {
+    
+    //get card type to check for compatibility
+    byte piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
+    // Check for compatibility
+    if (    piccType != MFRC522::PICC_TYPE_MIFARE_MINI
+        &&  piccType != MFRC522::PICC_TYPE_MIFARE_1K
+        &&  piccType != MFRC522::PICC_TYPE_MIFARE_4K) {
+        
+        return false;
+    }
+    return true;
+ }
+ 
+/* Function: authenticate
+ * Description: Authenticates card to allow writing and reading functions
+ * Inputs: none
+ * Outputs: none
+ */
+ void authenticate()
+ {
+   byte status;
+   // In order to read or write data to a PICC, the card must first be
+    //authenticated using a key. Below, the PICC is being authenticated using 
+    //key A so we can read data from card
+   
+    status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &key, &(mfrc522.uid));
+    if (status != MFRC522::STATUS_OK) {
+        Serial.print(F("PCD_Authenticate() failed: "));
+        Serial.println(mfrc522.GetStatusCodeName(status));
+        return;
+    }
+
+    // Authenticate using key B
+    status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_B, trailerBlock, &key, &(mfrc522.uid));
+    if (status != MFRC522::STATUS_OK) {
+        Serial.print(F("PCD_Authenticate() failed: "));
+        Serial.println(mfrc522.GetStatusCodeName(status));
+        return;
+    }
+ }
+
+/* Function: read_from_block
+ * Description: reads data from a specified block on the card
+ * Inputs: empty buffer, size of the data to read, size of the buffer
+ * Outputs: Byte signifying read status
+ */
+ byte read(byte *buffer, byte *buff_size)
+ {
+    
+    //method reads from the block address(blockAddr) and writes it to the
+    //buffer.
+   return mfrc522.MIFARE_Read(blockAddr, buffer, buff_size);
+   
+    
+ }
 
 /*  Function sendMessage
  *  Description: Function sends data over to the server. Data is passed in the

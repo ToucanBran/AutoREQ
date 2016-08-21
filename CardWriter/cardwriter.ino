@@ -1,6 +1,6 @@
 /**
  * CARDWRITER
- * Purpose of this program is write new item numbers to an RFID card
+ * 
  * 
  * -----------------------------------------------------------------------------------------
  *             MFRC522      
@@ -13,6 +13,13 @@
  * SPI MISO    MISO         12 / ICSP-1   
  * SPI SCK     SCK          13 / ICSP-3   
  * 
+ * Purpose of this program is write new item numbers to an RFID card
+ * 
+ * Thanks to SparkFun's wifly shield library and Miguel Balboa's MFRC522 library
+ * https://github.com/sparkfun/WiFly-Shield/ https://github.com/miguelbalboa/rfid
+ *
+ * Definitions
+ * PICC  = This is the RFID card or key fob 
  */
 
 #include <SPI.h>
@@ -84,7 +91,7 @@ void loop() {
         return;
 
     //checks card compatibility
-    if (!card_ok())
+    if (!card_compatible())
       Serial.println(F("This sample only works with MIFARE Classic cards."));
   
     //authenticates cards for writing purposes
@@ -140,12 +147,12 @@ void loop() {
     Serial.println();
  }
 
- /* Function: card_ok
+ /* Function: card_compatible
  * Description: Checks rfid card for compatibility
  * Inputs: None
  * Outputs: boolean, true if card compatible, false if not
  */
- boolean card_ok()
+ boolean card_compatible()
  {
     
     //get card type to check for compatibility
