@@ -100,7 +100,7 @@ void loop() {
     }
     else{
         Serial.print(F("MIFARE_Read() failed: "));
-        Serial.println(mfrc522.GetStatusCodeName(status));
+       // Serial.println(mfrc522.GetStatusCodeName(status));
     }
     
     // Halt PICC

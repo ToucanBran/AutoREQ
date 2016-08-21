@@ -12,18 +12,21 @@ def add_order(location, item_num):
     # some data validation. Location code should only be 4 characters, item_num
     # should only be 6
     if len(location) == 4 and len(item_num) == 6:
+        try:
+             # get par level and unit of measure. 
+            level, uom = get_pars(location, item_num)
+            logging.debug(level)
+            logging.debug(uom)
 
-         # get par level and unit of measure. 
-        level, uom = get_pars(location, item_num)
-        logging.debug(level)
-        logging.debug(uom)
+             # insert the refill order into the database
+            logging.info("executing insert statement...")
+            sql_statement = "INSERT INTO orders (item, location, amount, uom) \
+                VALUES(%s,%s, %s, %s)"
 
-         # insert the refill order into the database
-        logging.info("executing insert statement...")
-        sql_statement = "INSERT INTO orders (item, location, amount, uom) \
-            VALUES(%s,%s, %s, %s)"
+            db.insert(sql_statement,(item_num, location, level, uom))
+        except Exception as e:
+            print("An error occured: {}".format(e));
 
-        db.insert(sql_statement,(item_num, location, level, uom))
        
     else:
         logging.debug("data validation failed at add_order")
