@@ -75,6 +75,11 @@ void setup() {
 }
 
 void loop() {
+/*************************************************************************************
+ * TODO://
+ * Make all cards the bin location so you only have to assign it once
+ * ***********************************************************************************
+ */
 
     byte buffer[MIN_BUFFER_SIZE];
     byte size = sizeof(buffer);

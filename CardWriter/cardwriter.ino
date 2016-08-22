@@ -68,6 +68,13 @@ void setup() {
  */
 void loop() {
 
+/*************************************************************************************
+ * TODO://
+ * Make all cards the bin location so you only have to assign it once
+ * ***********************************************************************************
+ */
+
+
     //adding null character to end of datablock for reading purposes
     dataBlock[ITEM_NUMBER_SIZE+1] = '\0';
     int dataBlock_size = sizeof(dataBlock) / sizeof(dataBlock[0]);
