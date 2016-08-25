@@ -13,7 +13,7 @@
  * SPI MISO    MISO         12 / ICSP-1   
  * SPI SCK     SCK          13 / ICSP-3   
  * 
- * Purpose of this program is write new item numbers to an RFID card
+ * Purpose of this program is write new bin locations to an RFID card
  * 
  * Thanks to SparkFun's wifly shield library and Miguel Balboa's MFRC522 library
  * https://github.com/sparkfun/WiFly-Shield/ https://github.com/miguelbalboa/rfid
@@ -28,11 +28,11 @@
 
 #define RST_PIN           9           // Configurable, see typical pin layout above
 #define SS_PIN            7         // Configurable, see typical pin layout above
-#define ITEM_NUMBER_SIZE  6          //number of characters in item number
+#define BIN_LOCATION_SIZE  6          //number of characters in bin location
 #define DEFAULT_READ_SIZE 18        //in order to read, the minimum/default read size is 18
 
 //Arduino kept overwriting this variables so I had to put it here
-byte dataBlock[ITEM_NUMBER_SIZE+1];
+byte dataBlock[BIN_LOCATION_SIZE+1];
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 MFRC522::MIFARE_Key key;
@@ -59,7 +59,7 @@ void setup() {
     }
 
 
-    Serial.println(F("No item number set. Enter part number to write to card:"));
+    Serial.println(F("No bin location set. Enter bin location to write to card:"));
    
 }
 
@@ -76,14 +76,14 @@ void loop() {
 
 
     //adding null character to end of datablock for reading purposes
-    dataBlock[ITEM_NUMBER_SIZE+1] = '\0';
+    dataBlock[BIN_LOCATION_SIZE+1] = '\0';
     int dataBlock_size = sizeof(dataBlock) / sizeof(dataBlock[0]);
 
     //check if user has entered a number
     if(Serial.available())
     {
-      //receives new item number and writes it to the datablock array
-      get_response(dataBlock,ITEM_NUMBER_SIZE);
+      //receives new bin location and writes it to the datablock array
+      get_response(dataBlock,BIN_LOCATION_SIZE);
 
       //ready to write new number to card
       question_user(dataBlock,dataBlock_size);
@@ -222,7 +222,7 @@ void loop() {
     }
     
     // Read data from the block (should now be what we have written)
-    Serial.print(F("Card item number is now: ")); 
+    Serial.print(F("Card bin location is now: ")); 
 
     //calls to_char to print out the buffer data
     to_char(buffer,data_size);
@@ -238,7 +238,7 @@ void write_to_block(byte *data)
  {
   //sucks about the variables, I'll need to optimize this later
   byte status, count = 0, buffer[DEFAULT_READ_SIZE], buff_size = DEFAULT_READ_SIZE;
-  int num_size = ITEM_NUMBER_SIZE + 1;
+  int num_size = BIN_LOCATION_SIZE + 1;
 
     Serial.print(F("Writing data onto card...")); 
 
@@ -267,18 +267,18 @@ void write_to_block(byte *data)
       Serial.println(" Success!");
 
       //call read_from_block to print out data on card
-      read_from_block(buffer, ITEM_NUMBER_SIZE, &buff_size);
+      read_from_block(buffer, BIN_LOCATION_SIZE, &buff_size);
      
     }
 
-    //asks user for new part number or new card
+    //asks user for new bin location or new card
     question_user(data, num_size);
  }
 
  /* Function: question_user
- * Description: Prompt that tells user the current item number stored
- *              and asks for a new card or part number.
- * Inputs: pointer to the current part number and the length of it
+ * Description: Prompt that tells user the current bin location stored
+ *              and asks for a new card or bin location.
+ * Inputs: pointer to the current bin location and the length of it
  * Outputs: None
  */
  void question_user(byte *datablock, int len)
@@ -287,7 +287,7 @@ void write_to_block(byte *data)
     Serial.print("Current number stored for writing is: ");
       while (*datablock != '\0')
         Serial.write(*datablock++);
-    Serial.println("\nPlease swipe new card or enter new part number when ready.\n");
+    Serial.println("\nPlease swipe new card or enter new bin location when ready.\n");
    
  }
 

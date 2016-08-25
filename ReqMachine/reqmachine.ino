@@ -34,7 +34,7 @@
 #define MIN_BUFFER_SIZE   18          // Minimum buffer size for read function
 #define DEST_PORT         5000        //Arbtrary port number, can change
 #define MACHINE_LOCATION  "emrg"     //Dept code. This will change 
-#define MMIS_NUMBER_SIZE  6          //number of characters in your MMIS number
+#define BIN_LOCATION_SIZE  6          //number of characters in your MMIS number
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 MFRC522::MIFARE_Key key;
@@ -98,10 +98,10 @@ void loop() {
     //authenticates cards for reading purposes
     authenticate();
     
-    //Call read to fill up the buffer with the item number
+    //Call read to fill up the buffer with the bin location
     //to refill. If status is ok, send the order to the server
     if (read(buffer,&size) == MFRC522::STATUS_OK) {
-        sendMessage(buffer,MMIS_NUMBER_SIZE);
+        sendMessage(buffer,BIN_LOCATION_SIZE);
     }
     else{
         Serial.print(F("MIFARE_Read() failed: "));
