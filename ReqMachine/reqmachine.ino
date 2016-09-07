@@ -13,10 +13,12 @@
  * Signal      Pin          Pin           
  * -----------------------------------------------------------------------------------------
  * RST/Reset   RST          9             
- * SPI SS      SDA(SS)      7            
+ * SPI SS      SDA(NSS)      7            
  * SPI MOSI    MOSI         11 / ICSP-4   
  * SPI MISO    MISO         12 / ICSP-1   
  * SPI SCK     SCK          13 / ICSP-3   
+ *             VCC          5V
+ * 
  * 
  * This program will allow the arduino to read an RFID card 
  * and send data to a listening port on a server.
@@ -35,6 +37,9 @@
 #define DEST_PORT         5000        //Arbtrary port number, can change
 #define MACHINE_LOCATION  "emrg"     //Dept code. This will change 
 #define BIN_LOCATION_SIZE  6          //number of characters in your MMIS number
+#define GREEN_PIN          5
+#define RED_PIN            6
+#define  BLUE_PIN           3
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 MFRC522::MIFARE_Key key;
@@ -45,9 +50,13 @@ byte blockAddr      = 4;
 byte trailerBlock   = 7;
 
 
+
 void setup() {
    
    Serial.begin(9600);
+   pinMode(GREEN_PIN,OUTPUT);
+   pinMode(RED_PIN,OUTPUT);
+   pinMode(BLUE_PIN,OUTPUT);
 
   //start up wifly
   WiFly.begin();
@@ -71,6 +80,7 @@ void setup() {
   for (int i = 0; i < 6; i++) {
       key.keyByte[i] = 0xFF;
   }
+
 
 }
 
@@ -218,12 +228,25 @@ void loop() {
          client.print(c = buffer[i]);
          
       }
-     
+      analogWrite(GREEN_PIN,191);
+      analogWrite(RED_PIN,48);
+      analogWrite(BLUE_PIN,196);
+      delay(1000);
+      digitalWrite(GREEN_PIN,LOW);
+      digitalWrite(RED_PIN,LOW);
+      digitalWrite(BLUE_PIN,LOW);
       //disconnects from socket
       client.stop();
     }
     else
     {
+      digitalWrite(RED_PIN,HIGH);
+      delay(500);
+      digitalWrite(RED_PIN,LOW);
+      delay(500);
+      digitalWrite(RED_PIN,HIGH);
+      delay(500);
+      digitalWrite(RED_PIN,LOW);
       Serial.println("Connection failed. Is port open?");
      
     }
